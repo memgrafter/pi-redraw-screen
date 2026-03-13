@@ -3,7 +3,13 @@
  *
  * Adds:
  * - /redraw command
- * - optional keyboard shortcut (default ctrl+r, configurable via settings)
+ * - optional keyboard shortcut (no default — configure via settings.json)
+ *
+ * To bind a shortcut, add to ~/.pi/agent/settings.json:
+ *   "redraw_shortcut": "ctrl+r"
+ *
+ * If binding ctrl+r, also rebind renameSession in ~/.pi/agent/keybindings.json:
+ *   "renameSession": ["ctrl+shift+r"]
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -13,7 +19,7 @@ import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-age
 
 type ShortcutId = Parameters<ExtensionAPI["registerShortcut"]>[0];
 
-const DEFAULT_REDRAW_SHORTCUT: ShortcutId = "ctrl+r";
+const DEFAULT_REDRAW_SHORTCUT: ShortcutId | null = null;
 
 function readJsonFile(path: string): unknown | undefined {
 	if (!existsSync(path)) {
@@ -83,10 +89,12 @@ function resolveRedrawShortcutFromPiSettings(cwd: string): ShortcutId | null {
 	return DEFAULT_REDRAW_SHORTCUT;
 }
 
-async function forceFullRedraw(ctx: ExtensionContext): Promise<boolean> {
+async function forceFullRedraw(pi: ExtensionAPI, ctx: ExtensionContext): Promise<boolean> {
 	if (!ctx.hasUI) {
 		return false;
 	}
+
+	pi.events.emit("redraw", {});
 
 	await ctx.ui.custom<void>((tui, _theme, _keybindings, done) => {
 		tui.requestRender(true);
@@ -104,7 +112,7 @@ export default function piRedrawScreenExtension(pi: ExtensionAPI): void {
 	pi.registerCommand("redraw", {
 		description: "Force full screen redraw",
 		handler: async (_args, ctx) => {
-			const redrawn = await forceFullRedraw(ctx);
+			const redrawn = await forceFullRedraw(pi, ctx);
 			if (redrawn) {
 				ctx.ui.notify("Screen redrawn", "info");
 			}
@@ -116,7 +124,7 @@ export default function piRedrawScreenExtension(pi: ExtensionAPI): void {
 		pi.registerShortcut(shortcut, {
 			description: "Force full screen redraw",
 			handler: async (ctx) => {
-				await forceFullRedraw(ctx);
+				await forceFullRedraw(pi, ctx);
 			},
 		});
 	}

@@ -5,7 +5,7 @@ Force a full screen redraw in **pi** via a slash command and optional shortcut.
 ## Features
 
 - `/redraw` command for forced full TUI redraw (`requestRender(true)`)
-- Optional keyboard shortcut (default: `ctrl+r`)
+- Optional keyboard shortcut (no default — opt-in via settings)
 - Shortcut configurable via pi settings:
   - `redraw_shortcut` (preferred)
   - `redrawShortcut` (fallback)
@@ -20,13 +20,26 @@ Set in either:
 
 Project setting takes precedence over global.
 
+### Enable `ctrl+r`
+
+**1. Bind the shortcut** in `~/.pi/agent/settings.json`:
+
 ```json
 {
   "redraw_shortcut": "ctrl+r"
 }
 ```
 
-Disable shortcut:
+**2. Rebind `renameSession`** in `~/.pi/agent/keybindings.json` to avoid the
+built-in conflict warning:
+
+```json
+{
+  "renameSession": ["ctrl+shift+r"]
+}
+```
+
+### Disable shortcut
 
 ```json
 {
