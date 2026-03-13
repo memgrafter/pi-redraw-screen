@@ -1,0 +1,14 @@
+{
+  "name": "pi-redraw-screen",
+  "version": "0.1.0",
+  "description": "full screen redraw extension for pi",
+  "type": "module",
+  "keywords": ["pi-package", "redraw", "tui"],
+  "files": ["extensions", "README.md"],
+  "pi": {
+    "extensions": ["./extensions"]
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*"
+  }
+}
